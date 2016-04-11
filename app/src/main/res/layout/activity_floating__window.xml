@@ -16,4 +16,28 @@
         android:layout_height="wrap_content"
         android:text="隐藏桌面悬浮窗" />
 
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/txt_editText" />
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="IMEI"
+        android:id="@+id/tv_content" />
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="获取IMEI"
+        android:id="@+id/btn_refresh" />
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="测试广播"
+        android:id="@+id/btn_broadcast"
+        android:layout_gravity="center_horizontal" />
+
 </LinearLayout>

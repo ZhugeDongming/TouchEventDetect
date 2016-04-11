@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.sogou.toucheventdetect">
+    package="com.sogou.toucheventdetect" >
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.GET_TASKS"/>
 
     <application
@@ -14,6 +16,7 @@
         <activity
             android:name=".Floating_WindowActivity"
             android:label="@string/app_name"
+            android:windowSoftInputMode="stateAlwaysVisible|adjustPan"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,6 +25,20 @@
             </intent-filter>
         </activity>
         <service android:name=".TopWindowService" />
+        <!--<receiver android:name=".hookReceiver">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="com.android.broadcast.RECEIVER_ACTION" ></action>-->
+            <!--</intent-filter>-->
+        <!--</receiver>-->
+        <meta-data
+            android:name="xposedmodule"
+            android:value="true" />
+        <meta-data
+            android:name="xposeddescription"
+            android:value="TestXposed" />
+        <meta-data
+            android:name="xposedminversion"
+            android:value="30" />
     </application>
 
 </manifest>

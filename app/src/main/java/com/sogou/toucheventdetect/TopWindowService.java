@@ -3,6 +3,10 @@ package com.sogou.toucheventdetect;
 /**
  * Created by Dongming on 2016/4/8.
  */
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,17 +15,22 @@ import android.app.ActivityManager.RunningTaskInfo;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.PixelFormat;
+import android.hardware.input.InputManager;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.Button;
+
+import android.util.Log;
 
 public class TopWindowService extends Service
 {
@@ -31,6 +40,7 @@ public class TopWindowService extends Service
 
     private static final int HANDLE_CHECK_ACTIVITY = 200;
 
+
     private boolean isAdded = false; // 是否已增加悬浮窗
     private static WindowManager wm;
     private static WindowManager.LayoutParams params;
@@ -38,6 +48,92 @@ public class TopWindowService extends Service
 
     private List<String> homeList; // 桌面应用程序包名列表
     private ActivityManager mActivityManager;
+
+    private HookReceiver mhookReceiver;
+    private static final String ACTION = "com.android.broadcast.RECEIVER_ACTION";
+
+    UDPServer mudpserver = new UDPServer();
+    Handler mTimehandler = new Handler();
+    MyHandler myHandler = new MyHandler(Looper.myLooper());
+    Runnable runnable = new Runnable() {
+        private String MSG_TAG = "TopWindowThread";
+        @Override
+        public void run() {
+
+        }
+    };
+
+    public class UDPServer extends Thread{
+        private static final String MSG_TAG = "UDPServer";
+        @Override
+        public void run() {
+            try {
+                byte[] buffer = new byte[20];
+                DatagramSocket mServerSocket = new DatagramSocket(8803);
+                DatagramPacket mPacket = new DatagramPacket(buffer, buffer.length);
+                while (true) {
+                    mServerSocket.receive(mPacket);
+                    Log.d(MSG_TAG , "接收到的长度：" + mPacket.getLength() );
+                    Log.d(MSG_TAG , "端口地址：" + mPacket.getAddress().getHostAddress() );
+                    String strRead = new String(mPacket.getData()).trim();
+                    Log.d(MSG_TAG , "内容：" + strRead );
+
+
+                    Looper curLooper = Looper.myLooper ();
+                    Looper mainLooper = Looper.getMainLooper ();
+                    String msg = "" ;
+                    if (curLooper== null ){
+                        myHandler = new MyHandler(mainLooper);
+                    } else {
+                        myHandler = new MyHandler(curLooper);
+                    }
+
+                    if (strRead.contains("ACTION_UP")){
+                        msg = "ACTION_UP";
+                    }else if(strRead.contains("ACTION_DOWN")){
+                        msg = "ACTION_DOWN";
+                    }else {
+                        msg = "NO ACTION";
+                    }
+                    myHandler.removeMessages(0);
+                    Message m = myHandler.obtainMessage(1, 1, 1, msg);
+                    myHandler.sendMessage(m);
+                }
+            } catch (SocketException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+//        } catch (ClassNotFoundException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+
+        }
+    }
+
+    private class MyHandler extends Handler{
+        public MyHandler(Looper looper){
+            super (looper);
+        }
+        @Override
+        public void handleMessage(Message msg) { // 处理消息
+            if(msg!=null){
+                String strMsg = msg.obj.toString();
+                if (strMsg.equals("ACTION_UP")){
+                    btn_floatView.setBackgroundResource(R.drawable.green);
+                }else if (strMsg.equals("ACTION_DOWN")){
+                    btn_floatView.setBackgroundResource(R.drawable.red);
+                }else {
+                    //do nothing
+                }
+            }
+        }
+    }
+
+
 
     @Override
     public IBinder onBind(Intent intent)
@@ -52,19 +148,20 @@ public class TopWindowService extends Service
 
         homeList = getHomes();
         createFloatView();
+
+        mudpserver.start();
     }
 
     @Override
     public void onDestroy()
     {
+//        unregisterReceiver(mhookReceiver);
         super.onDestroy();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        super.onStartCommand(intent, flags, startId);
-
         int operation = intent.getIntExtra(OPERATION, OPERATION_SHOW);
         switch (operation)
         {
@@ -76,7 +173,13 @@ public class TopWindowService extends Service
                 mHandler.removeMessages(HANDLE_CHECK_ACTIVITY);
                 break;
         }
-        return 1;
+
+
+
+        mTimehandler.postDelayed(runnable, 2000);
+
+        return  super.onStartCommand(intent, flags, startId);
+        //return 1;
     }
 
     private Handler mHandler = new Handler()
@@ -114,7 +217,7 @@ public class TopWindowService extends Service
     private void createFloatView()
     {
         btn_floatView = new Button(getApplicationContext());
-        btn_floatView.setText("警告");
+        //btn_floatView.setText("警告");
         btn_floatView.setBackgroundResource(R.drawable.eyyarth);
 
         wm = (WindowManager) getApplicationContext().getSystemService(
@@ -140,8 +243,8 @@ public class TopWindowService extends Service
 		 */
 
         // 设置悬浮窗的长得宽
-        params.width = 80;
-        params.height = 80;
+        params.width = 120;
+        params.height = 120;
 
         // 设置悬浮窗的Touch监听
         btn_floatView.setOnTouchListener(new OnTouchListener()
@@ -158,14 +261,16 @@ public class TopWindowService extends Service
                         lastY = (int) event.getRawY();
                         paramX = params.x;
                         paramY = params.y;
-                        btn_floatView.setBackgroundResource(R.drawable.earth);
+                        btn_floatView.setBackgroundResource(R.drawable.red);
+
+
                         break;
                     case MotionEvent.ACTION_UP:
                         lastX = (int) event.getRawX();
                         lastY = (int) event.getRawY();
                         paramX = params.x;
                         paramY = params.y;
-                        btn_floatView.setBackgroundResource(R.drawable.eyyarth);
+                        btn_floatView.setBackgroundResource(R.drawable.green);
                         break;
                     case MotionEvent.ACTION_MOVE:
                         int dx = (int) event.getRawX() - lastX;
@@ -220,3 +325,33 @@ public class TopWindowService extends Service
     }
 
 }
+
+//class DetectThread extends Thread{
+//    Handler mhandler;
+//    private String MSG_TAG = "TopWindow";
+//    public DetectThread( Handler handler ){
+//        mhandler = handler;
+//    }
+//
+//    @Override
+//    public void run() {
+//        //super.run();
+//        ShellCommand command = new ShellCommand();
+//        if (command.canSU()){
+//
+//            while ( true ) {
+//                ShellCommand.CommandResult result = command.su.runWaitFor("chmod 666 /dev/input/event*");
+//                if (result.success() && result.stderr == null){
+//                    ShellCommand.CommandResult r = command.su.runWaitFor("getevent /dev/input/event5");
+//                    if (!r.success()) {
+//                        Log.d(MSG_TAG, "Error " + r.stderr);
+//                    } else {
+//                        Log.d(MSG_TAG, "Successfully executed getprop wifi.interface. Result: " + r.stdout);
+//                        //this.tetherNetworkDevice = (r.stdout);
+//                    }
+//
+//                }
+//            }
+//        }
+//    }
+//}
