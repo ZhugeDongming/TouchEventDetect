@@ -218,7 +218,7 @@ public class TopWindowService extends Service
     {
         btn_floatView = new Button(getApplicationContext());
         //btn_floatView.setText("警告");
-        btn_floatView.setBackgroundResource(R.drawable.eyyarth);
+        btn_floatView.setBackgroundResource(R.drawable.green);
 
         wm = (WindowManager) getApplicationContext().getSystemService(
                 Context.WINDOW_SERVICE);
@@ -243,8 +243,8 @@ public class TopWindowService extends Service
 		 */
 
         // 设置悬浮窗的长得宽
-        params.width = 120;
-        params.height = 120;
+        params.width = 200;
+        params.height = 200;
 
         // 设置悬浮窗的Touch监听
         btn_floatView.setOnTouchListener(new OnTouchListener()
