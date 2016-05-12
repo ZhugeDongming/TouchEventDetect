@@ -24,13 +24,15 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.Button;
-
 import android.util.Log;
+import com.sogou.utils.*;
 
 public class TopWindowService extends Service
 {
@@ -245,6 +247,19 @@ public class TopWindowService extends Service
         // 设置悬浮窗的长得宽
         params.width = 200;
         params.height = 200;
+
+        //设置View默认的摆放位置
+        params.gravity = Gravity.LEFT | Gravity.TOP;
+
+        //计算输入法键盘高度
+        DisplayMetrics dm = new DisplayMetrics();
+        wm.getDefaultDisplay().getMetrics(dm);
+        int boardheight = (int) Math.min(0.6472*dm.widthPixels, 0.6 * dm.heightPixels);
+
+        //设置View
+        params.x = 0;
+        params.y = boardheight - 80;
+
 
         // 设置悬浮窗的Touch监听
         btn_floatView.setOnTouchListener(new OnTouchListener()

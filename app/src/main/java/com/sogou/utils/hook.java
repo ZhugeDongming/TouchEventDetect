@@ -21,7 +21,8 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.text.DecimalFormat;
-
+import java.text.SimpleDateFormat;
+import java.util.Date;
 /**
  * Created by deadwalk on 16/4/10.
  */
@@ -34,31 +35,40 @@ public class hook implements IXposedHookLoadPackage {
         XposedHelpers.findAndHookMethod( "android.telephony.TelephonyManager", lpparam.classLoader, "getDeviceId",new XC_MethodReplacement(){
             @Override
             protected Object replaceHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable{
-                XposedBridge.log( "getDeviceId Hook Success!");
+                //XposedBridge.log( "getDeviceId Hook Success!");
                 return"Maomao is pig";
             }
         });
 
-//        XposedHelpers.findAndHookMethod( "android.app.Activity", lpparam.classLoader, "dispatchKeyEvent", KeyEvent.class ,new XC_MethodReplacement(){
-//            @Override
-//            protected Object replaceHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable{
-//                XposedBridge.log( "android.app.Activity Hook Success!");
-//                return"Maomao is pig";
-//            }
-//        });
 
-//        XposedHelpers.findAndHookMethod("android.app.Activity",
+//        XposedHelpers.findAndHookMethod("android.app.ApplicationPackageManager",
 //                lpparam.classLoader,
-//                "dispatchKeyEvent",
-//                KeyEvent.class,
+//                "getInstalledPackages",
+//                int.class,
 //                new XC_MethodHook() {
 //                    @Override
 //                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-//                        XposedBridge.log( "android.app.Activity Hook Success!");
-//                        KeyEvent keyEvent = (KeyEvent) param.args[0];
-//                        //KeyEvent keyEvent = (KeyEvent) param.getResult();
-//                        int k = keyEvent.getAction();
-//                        XposedBridge.log( "Key is"+ k);
+//                        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+//                        XposedBridge.log( df.format(new Date()) + lpparam.packageName + " getInstalledPackages Hook Success!");
+//                        super.beforeHookedMethod(param);
+//                    }
+//
+//                    @Override
+//                    protected void afterHookedMethod(MethodHookParam param) throws Throwable{
+//                        super.afterHookedMethod(param);
+//                    }
+//                }
+//        );
+//
+//        XposedHelpers.findAndHookMethod("android.app.ApplicationPackageManager",
+//                lpparam.classLoader,
+//                "getInstalledApplications",
+//                int.class,
+//                new XC_MethodHook() {
+//                    @Override
+//                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+//                        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+//                        XposedBridge.log( df.format(new Date()) + lpparam.packageName + " getInstalledApplications Hook Success!");
 //                        super.beforeHookedMethod(param);
 //                    }
 //
@@ -86,7 +96,7 @@ public class hook implements IXposedHookLoadPackage {
                         SocketAddress address = new InetSocketAddress("127.0.0.1", 8803);
                         switch (k & MotionEvent.ACTION_MASK) {
                             case MotionEvent.ACTION_DOWN:
-                                XposedBridge.log("ACTION_DOWN " + k + " x=" + df.format(x) + "  y=" + df.format(y));
+                                //XposedBridge.log("ACTION_DOWN " + k + " x=" + df.format(x) + "  y=" + df.format(y));
                                 try {
                                     String string = "ACTION_DOWN";
                                     byte[] data = string.getBytes();
@@ -106,7 +116,7 @@ public class hook implements IXposedHookLoadPackage {
                                 }
                                 break;
                             case MotionEvent.ACTION_UP:
-                                XposedBridge.log("ACTION_UP " + k + " x=" + df.format(x) + "  y=" + df.format(y));
+                                //XposedBridge.log("ACTION_UP " + k + " x=" + df.format(x) + "  y=" + df.format(y));
                                     try {
                                         String string = "ACTION_UP";
                                         byte[] data = string.getBytes();
@@ -126,10 +136,10 @@ public class hook implements IXposedHookLoadPackage {
                                     }
                                 break;
                             case MotionEvent.ACTION_POINTER_UP:
-                                XposedBridge.log("ACTION_POINTER_UP " + k + " x=" + df.format(x) + "  y=" + df.format(y));
+                                //XposedBridge.log("ACTION_POINTER_UP " + k + " x=" + df.format(x) + "  y=" + df.format(y));
                                 break;
                             case MotionEvent.ACTION_POINTER_DOWN:
-                                XposedBridge.log("ACTION_POINTER_DOWN " + k + " x=" + df.format(x) + "  y=" + df.format(y));
+                                //XposedBridge.log("ACTION_POINTER_DOWN " + k + " x=" + df.format(x) + "  y=" + df.format(y));
                                 break;
                         }
                         super.beforeHookedMethod(param);
